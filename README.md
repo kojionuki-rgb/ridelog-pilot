@@ -1,13 +1,11 @@
-# First public pilot release
+# RideLog Pilot v0.5
 
-A simple ride log application for professional drivers.
+Pilot final candidate.
 
-## Philosophy
-
-Simple is hard.
-
-We remove everything except what truly matters.
-
-## Status
-
-Pilot Version v0.2
+## Included
+- 🚖 乗車 / 🏁 降車 floating controls
+- Always-on-top controls for iPhone, iPad, and desktop
+- Day / Night / Auto display modes
+- Two-step destructive delete confirmation
+- A4乗務日報 print layout
+- CSV export and local device storage
