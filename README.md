@@ -1,11 +1,13 @@
-# RideLog Pilot v0.5
+# RideLog Pilot v0.6
 
-Pilot final candidate.
+Consolidated pilot candidate.
 
 ## Included
-- 🚖 乗車 / 🏁 降車 floating controls
-- Always-on-top controls for iPhone, iPad, and desktop
-- Day / Night / Auto display modes
-- Two-step destructive delete confirmation
-- A4乗務日報 print layout
-- CSV export and local device storage
+- 「仕事種別」を「乗車種別」に修正
+- 🚕 乗車 / 🏁 降車ボタンを指定デザインに統一
+- ボタンは常に最前面
+- Day / Night / Auto
+- 二段階削除確認
+- A4日報印刷
+- CSV保存
+- `.nojekyll` を追加
