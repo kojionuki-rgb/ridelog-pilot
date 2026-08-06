@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>乗務日報 試作版</title>
+<style>
+:root{
+  --bg:#f4f6f8;--card:#fff;--ink:#17202a;--muted:#6b7280;
+  --line:#d9e0e7;--navy:#102030;--green:#167c68;--red:#b42318;
+  --shadow:0 8px 24px rgba(16,32,48,.08);--radius:18px
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:1180px;margin:auto;padding:calc(14px + env(safe-area-inset-top)) 14px calc(86px + env(safe-area-inset-bottom))}
+header{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}
+h1{margin:0;font-size:clamp(23px,3vw,34px)}
+small,.muted{color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+box-shadow:var(--shadow);padding:16px}
+.grid{display:grid;gap:14px}
+
+.sales-hero{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;align-items:center;margin-bottom:14px}
+.hero-label{font-size:14px;font-weight:800;color:var(--muted)}
+.hero-value{font-size:clamp(42px,8vw,76px);font-weight:900;letter-spacing:-.04em;line-height:1.05;margin:4px 0 14px}
+.progress-wrap{max-width:680px}
+.progress-track{height:14px;background:#e8edf2;border-radius:999px;overflow:hidden}
+.progress-bar{height:100%;width:0;background:var(--green);transition:width .25s ease}
+.progress-text{display:flex;justify-content:space-between;gap:12px;font-size:13px;font-weight:800;color:#475467;margin-top:7px}
+.breakdown{display:grid;gap:10px}
+.breakdown div{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fafbfc}
+.breakdown span{display:block;font-size:12px;font-weight:700;color:var(--muted)}
+.breakdown b{display:block;font-size:24px;margin-top:4px}
+
+.summary{grid-template-columns:repeat(4,1fr)}
+.stat span{font-size:12px;font-weight:700;color:var(--muted)}
+.stat b{display:block;font-size:clamp(24px,4vw,38px);margin-top:5px}
+.main{grid-template-columns:minmax(310px,.9fr) minmax(440px,1.5fr);align-items:start;margin-top:14px}
+h2{font-size:18px;margin:0 0 12px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:6px}
+.full{grid-column:1/-1}
+label{font-size:12px;font-weight:700;color:var(--muted)}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;
+padding:12px 13px;min-height:46px}
+textarea{min-height:72px;resize:vertical}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.btn{border:0;border-radius:13px;padding:13px 14px;font-weight:800}
+.primary{background:var(--navy);color:#fff}
+.success{background:var(--green);color:#fff}
+.light{background:#eef2f5;color:var(--ink)}
+.danger{background:#fee4e2;color:var(--red)}
+.status{margin-bottom:12px;border-radius:12px;padding:10px 12px;background:#eef2f5;
+color:#475467;font-size:13px;font-weight:800}
+.status.active{background:#e7f6f1;color:#11614f}
+.list{display:flex;flex-direction:column;gap:10px}
+.trip{display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;
+border:1px solid var(--line);border-radius:14px;padding:12px}
+.badge{background:#eef2ff;border-radius:10px;padding:8px;text-align:center;font-weight:900;font-size:12px}
+.route{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{font-size:12px;color:var(--muted);margin-top:3px}
+.fare{text-align:right;font-weight:900}
+.iconbtn{border:0;background:#f3f5f7;border-radius:9px;padding:7px 9px;margin-left:4px}
+.empty{text-align:center;color:var(--muted);padding:28px 8px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.toolbar .btn{font-size:13px;padding:10px 12px}
+.bottom{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,1180px);
+background:rgba(255,255,255,.94);backdrop-filter:blur(14px);border-top:1px solid var(--line);
+display:grid;grid-template-columns:repeat(4,1fr);padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:10}
+.nav{border:0;background:transparent;padding:8px;font-weight:800;color:#667085}
+.nav.active{color:var(--green)}
+dialog{border:0;border-radius:18px;width:min(92vw,560px);padding:0;box-shadow:0 24px 70px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(0,0,0,.42)}
+.dialog{padding:18px}
+@media(max-width:820px){.summary{grid-template-columns:1fr 1fr}.main{grid-template-columns:1fr}.sales-hero{grid-template-columns:1fr}}
+@media(max-width:500px){
+  .app{padding-left:10px;padding-right:10px}.card{padding:13px}.form{grid-template-columns:1fr}
+  .full{grid-column:auto}.actions{grid-template-columns:1fr}.trip{grid-template-columns:64px 1fr}.fare{grid-column:2;text-align:left}
+}
+@media print{
+  .no-print,.bottom,dialog{display:none!important}.app{max-width:none;padding:0}.card{box-shadow:none}
+  .main{grid-template-columns:1fr}.summary{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div><h1>乗務日報 <small>試作版</small></h1><div class="muted">ハイヤー・Uber向け</div></div>
+  <button class="btn light no-print" onclick="newDay()">新しい日</button>
+</header>
+
+<section class="card sales-hero">
+  <div>
+    <div class="hero-label">本日の累計売上</div>
+    <div id="sFare" class="hero-value">¥0</div>
+    <div class="progress-wrap">
+      <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+      <div class="progress-text">
+        <span id="progressText">目標未設定</span>
+        <span id="remainingText"></span>
+      </div>
+    </div>
+  </div>
+  <div class="breakdown">
+    <div><span>Uber</span><b id="uberFare">¥0</b></div>
+    <div><span>ハイヤー</span><b id="hireFare">¥0</b></div>
+    <div><span>その他</span><b id="otherFare">¥0</b></div>
+  </div>
+</section>
+
+<section class="grid summary">
+  <div class="card stat"><span>乗車回数</span><b id="sCount">0</b></div>
+  <div class="card stat"><span>平均単価</span><b id="avgFare">¥0</b></div>
+  <div class="card stat"><span>乗車人数</span><b id="sPax">0</b></div>
+  <div class="card stat"><span>高速料金</span><b id="sToll">¥0</b></div>
+</section>
+
+<section class="grid main">
+<div class="grid">
+  <div class="card">
+    <h2>乗務情報</h2>
+    <div class="form">
+      <div class="field"><label>日付</label><input id="date" type="date"></div>
+      <div class="field"><label>天候</label><select id="weather"><option>晴れ</option><option>曇り</option><option>雨</option><option>雪</option><option>その他</option></select></div>
+      <div class="field"><label>乗務員名</label><input id="driver" placeholder="氏名"></div>
+      <div class="field"><label>車両番号</label><input id="car" placeholder="車両番号"></div>
+      <div class="field"><label>出庫時刻</label><input id="startTime" type="time"></div>
+      <div class="field"><label>帰庫時刻</label><input id="endTime" type="time"></div>
+      <div class="field full"><label>本日の売上目標</label><input id="goal" type="number" inputmode="numeric" placeholder="例：80000"></div>
+    </div>
+    <div class="toolbar no-print">
+      <button class="btn light" onclick="nowTo('startTime')">出庫を現在時刻</button>
+      <button class="btn light" onclick="nowTo('endTime')">帰庫を現在時刻</button>
+    </div>
+  </div>
+
+  <div class="card no-print">
+    <h2>データ操作</h2>
+    <div class="toolbar">
+      <button class="btn light" onclick="downloadCSV()">CSV保存</button>
+      <button class="btn light" onclick="window.print()">印刷／PDF</button>
+      <button class="btn danger" onclick="clearTrips()">乗車記録を消去</button>
+    </div>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card no-print" id="entry">
+    <h2>乗車入力</h2>
+    <div id="status" class="status">待機中</div>
+    <div class="form">
+      <div class="field"><label>仕事種別</label><select id="type"><option>Uber</option><option>ハイヤー</option><option>DiDi</option><option>その他</option></select></div>
+      <div class="field"><label>人数</label><select id="pax"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
+      <div class="field full"><label>乗車地</label><input id="pickup" placeholder="例：高円寺"></div>
+      <div class="field full"><label>降車地</label><input id="dropoff" placeholder="例：丸の内"></div>
+      <div class="field"><label>料金</label><input id="fare" type="number" inputmode="numeric" placeholder="0"></div>
+      <div class="field"><label>高速料金</label><input id="toll" type="number" inputmode="numeric" placeholder="0"></div>
+      <div class="field full"><label>メモ</label><textarea id="note" placeholder="経由地・待機・連絡事項など"></textarea></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" onclick="startTrip()">乗車開始</button>
+      <button class="btn success" onclick="finishTrip()">降車・保存</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>本日の乗車記録</h2>
+    <div id="tripList" class="list"></div>
+  </div>
+</div>
+</section>
+</div>
+
+<nav class="bottom no-print">
+  <button class="nav active" onclick="window.scrollTo({top:0,behavior:'smooth'})">ホーム</button>
+  <button class="nav" onclick="document.getElementById('entry').scrollIntoView({behavior:'smooth'})">入力</button>
+  <button class="nav" onclick="document.getElementById('tripList').scrollIntoView({behavior:'smooth'})">履歴</button>
+  <button class="nav" onclick="window.print()">PDF</button>
+</nav>
+
+<dialog id="editDialog">
+<div class="dialog">
+  <h2>乗車記録を編集</h2>
+  <div class="form">
+    <div class="field"><label>乗車時刻</label><input id="eStart" type="time"></div>
+    <div class="field"><label>降車時刻</label><input id="eEnd" type="time"></div>
+    <div class="field full"><label>乗車地</label><input id="ePickup"></div>
+    <div class="field full"><label>降車地</label><input id="eDropoff"></div>
+    <div class="field"><label>料金</label><input id="eFare" type="number"></div>
+    <div class="field"><label>高速料金</label><input id="eToll" type="number"></div>
+  </div>
+  <div class="toolbar" style="justify-content:flex-end">
+    <button class="btn light" onclick="editDialog.close()">取消</button>
+    <button class="btn success" onclick="saveEdit()">保存</button>
+  </div>
+</div>
+</dialog>
+
+<script>
+const KEY='ride_log_prototype_v1';
+let state={meta:{},trips:[],active:null};
+let editIndex=-1;
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const now=()=>{const d=new Date();return `${pad(d.getHours())}:${pad(d.getMinutes())}`};
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const yen=n=>'¥'+Number(n||0).toLocaleString('ja-JP');
+
+function save(){
+  readMeta();
+  localStorage.setItem(KEY,JSON.stringify(state));
+  render();
+}
+function load(){
+  try{state=JSON.parse(localStorage.getItem(KEY))||state}catch(e){}
+  if(!state.meta.date) state.meta.date=today();
+  writeMeta(); render();
+}
+function readMeta(){
+  ['date','weather','driver','car','startTime','endTime','goal'].forEach(k=>state.meta[k]=$(k).value);
+}
+function writeMeta(){
+  ['date','weather','driver','car','startTime','endTime','goal'].forEach(k=>$(k).value=state.meta[k]||'');
+}
+function nowTo(id){$(id).value=now();save()}
+function startTrip(){
+  if(state.active){alert('すでに乗車中です。');return}
+  state.active={start:now(),type:$('type').value,pax:+$('pax').value,pickup:$('pickup').value.trim()};
+  save();
+}
+function finishTrip(){
+  if(!state.active){alert('先に「乗車開始」を押してください。');return}
+  const trip={...state.active,end:now(),dropoff:$('dropoff').value.trim(),
+    fare:+($('fare').value||0),toll:+($('toll').value||0),note:$('note').value.trim()};
+  state.trips.push(trip); state.active=null;
+  ['pickup','dropoff','fare','toll','note'].forEach(id=>$(id).value='');
+  save();
+}
+function render(){
+  const fare=state.trips.reduce((a,t)=>a+t.fare,0);
+  const toll=state.trips.reduce((a,t)=>a+t.toll,0);
+  const pax=state.trips.reduce((a,t)=>a+t.pax,0);
+  const count=state.trips.length;
+  const uber=state.trips.filter(t=>t.type==='Uber').reduce((a,t)=>a+t.fare,0);
+  const hire=state.trips.filter(t=>t.type==='ハイヤー').reduce((a,t)=>a+t.fare,0);
+  const other=fare-uber-hire;
+  const goal=Number(state.meta.goal||0);
+  const rate=goal>0?Math.min(100,Math.round(fare/goal*100)):0;
+  $('sFare').textContent=yen(fare); $('sToll').textContent=yen(toll);
+  $('sCount').textContent=count; $('sPax').textContent=pax;
+  $('avgFare').textContent=yen(count?Math.round(fare/count):0);
+  $('uberFare').textContent=yen(uber);
+  $('hireFare').textContent=yen(hire);
+  $('otherFare').textContent=yen(other);
+  $('progressBar').style.width=rate+'%';
+  $('progressText').textContent=goal>0?`目標 ${yen(goal)}／達成率 ${rate}%`:'目標未設定';
+  $('remainingText').textContent=goal>0?(fare>=goal?`目標達成 +${yen(fare-goal)}`:`あと ${yen(goal-fare)}`):'';
+  $('status').className='status'+(state.active?' active':'');
+  $('status').textContent=state.active?`乗車中　${state.active.start}／${state.active.pickup||'乗車地未入力'}`:'待機中';
+  const list=$('tripList');
+  if(!state.trips.length){list.innerHTML='<div class="empty">まだ乗車記録がありません。</div>';return}
+  list.innerHTML=state.trips.map((t,i)=>`
+    <div class="trip">
+      <div class="badge">${t.type}</div>
+      <div>
+        <div class="route">${t.pickup||'未入力'} → ${t.dropoff||'未入力'}</div>
+        <div class="meta">${t.start}–${t.end}／${t.pax}名／高速 ${yen(t.toll)}</div>
+        ${t.note?`<div class="meta">${escapeHtml(t.note)}</div>`:''}
+      </div>
+      <div class="fare">${yen(t.fare)}<div>
+        <button class="iconbtn no-print" onclick="editTrip(${i})">修正</button>
+        <button class="iconbtn no-print" onclick="deleteTrip(${i})">削除</button>
+      </div></div>
+    </div>`).join('');
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function deleteTrip(i){if(confirm('この記録を削除しますか？')){state.trips.splice(i,1);save()}}
+function editTrip(i){
+  editIndex=i;const t=state.trips[i];
+  $('eStart').value=t.start;$('eEnd').value=t.end;$('ePickup').value=t.pickup;
+  $('eDropoff').value=t.dropoff;$('eFare').value=t.fare;$('eToll').value=t.toll;
+  editDialog.showModal();
+}
+function saveEdit(){
+  const t=state.trips[editIndex];
+  Object.assign(t,{start:$('eStart').value,end:$('eEnd').value,pickup:$('ePickup').value,
+    dropoff:$('eDropoff').value,fare:+$('eFare').value,toll:+$('eToll').value});
+  editDialog.close();save();
+}
+function clearTrips(){if(confirm('本日の乗車記録をすべて消去しますか？')){state.trips=[];state.active=null;save()}}
+function newDay(){
+  if(!confirm('新しい日を開始しますか？ 現在の乗車記録は消去されます。'))return;
+  state={meta:{date:today(),driver:state.meta.driver||'',car:state.meta.car||'',weather:'晴れ',goal:state.meta.goal||''},trips:[],active:null};
+  writeMeta();save();
+}
+function downloadCSV(){
+  const rows=[['回数','種別','乗車時刻','乗車地','降車時刻','降車地','人数','料金','高速料金','メモ']];
+  state.trips.forEach((t,i)=>rows.push([i+1,t.type,t.start,t.pickup,t.end,t.dropoff,t.pax,t.fare,t.toll,t.note]));
+  const csv='\uFEFF'+rows.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`乗務日報_${state.meta.date||today()}.csv`;a.click();URL.revokeObjectURL(a.href);
+}
+document.querySelectorAll('input,select,textarea').forEach(el=>el.addEventListener('change',save));
+load();
+</script>
+</body>
+</html>
