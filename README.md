@@ -1,4 +1,4 @@
-# RideLog Pilot
+# First public pilot release
 
 A simple ride log application for professional drivers.
 
