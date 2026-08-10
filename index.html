@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>RideLog Pilot v1.0</title>
+<title>RideLog Pilot v1.1</title>
 <style>
 :root{
   --bg:#f4f6f8;--card:#ffffff;--ink:#17202a;--muted:#6b7280;
@@ -156,22 +156,42 @@ dialog::backdrop{background:rgba(0,0,0,.42)}
 }
 
 
-/* v1.0: 乗車種別カラー */
+/* v1.1: 乗車種別カラー */
 .badge.type-uber{background:#111;color:#fff}
-.badge.type-go{background:#00a76f;color:#fff}
-.badge.type-didi{background:#7b2cbf;color:#fff}
-.badge.type-hand{background:#c62828;color:#fff}
-.badge.type-airport{background:#1565c0;color:#fff}
+.badge.type-go{background:#1565c0;color:#fff}
+.badge.type-didi{background:#f57c00;color:#fff}
+.badge.type-hand{background:#7b2cbf;color:#fff}
+.badge.type-airport{background:#38bdf8;color:#071923}
 .badge.type-hotel{background:#f4c542;color:#111}
 .badge.type-hire{background:#546e7a;color:#fff}
 .badge.type-other{background:#6b7280;color:#fff}
 select.type-uber{background:#111;color:#fff}
-select.type-go{background:#00a76f;color:#fff}
-select.type-didi{background:#7b2cbf;color:#fff}
-select.type-hand{background:#c62828;color:#fff}
-select.type-airport{background:#1565c0;color:#fff}
+select.type-go{background:#1565c0;color:#fff}
+select.type-didi{background:#f57c00;color:#fff}
+select.type-hand{background:#7b2cbf;color:#fff}
+select.type-airport{background:#38bdf8;color:#071923}
 select.type-hotel{background:#f4c542;color:#111}
 select.type-hire{background:#546e7a;color:#fff}
+
+/* v1.1: ナイトモードでも乗車種別カラーを維持 */
+html[data-theme="dark"] select.type-uber{background:#111;color:#fff;border-color:#3f4852}
+html[data-theme="dark"] select.type-go{background:#1565c0;color:#fff;border-color:#4f8bd8}
+html[data-theme="dark"] select.type-didi{background:#f57c00;color:#fff;border-color:#ff9b3d}
+html[data-theme="dark"] select.type-hand{background:#7b2cbf;color:#fff;border-color:#9a55d0}
+html[data-theme="dark"] select.type-airport{background:#38bdf8;color:#071923;border-color:#7dd3fc}
+html[data-theme="dark"] select.type-hotel{background:#f4c542;color:#111;border-color:#ffe174}
+html[data-theme="dark"] select.type-hire{background:#6b7280;color:#fff;border-color:#8f96a3}
+html[data-theme="dark"] select.type-other{background:#4b5563;color:#fff;border-color:#6b7280}
+
+html[data-theme="dark"] .badge.type-uber{background:#111;color:#fff}
+html[data-theme="dark"] .badge.type-go{background:#1565c0;color:#fff}
+html[data-theme="dark"] .badge.type-didi{background:#f57c00;color:#fff}
+html[data-theme="dark"] .badge.type-hand{background:#7b2cbf;color:#fff}
+html[data-theme="dark"] .badge.type-airport{background:#38bdf8;color:#071923}
+html[data-theme="dark"] .badge.type-hotel{background:#f4c542;color:#111}
+html[data-theme="dark"] .badge.type-hire{background:#6b7280;color:#fff}
+html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
+
 .settings-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .settings-row select{max-width:230px}
 .wake-status{font-size:12px;color:var(--muted);margin-top:6px}
@@ -213,7 +233,7 @@ select.type-hire{background:#546e7a;color:#fff}
 <body>
 <div class="app">
 <header>
-  <div><h1>乗務日報 <small>PILOT v1.0</small></h1><div class="muted">プロドライバー向け</div><button class="release-link no-print" onclick="releaseDialog.showModal()">リリースノート</button></div>
+  <div><h1>乗務日報 <small>PILOT v1.1</small></h1><div class="muted">プロドライバー向け</div><button class="release-link no-print" onclick="releaseDialog.showModal()">リリースノート</button></div>
   <div style="display:flex;gap:8px;align-items:center"><button id="themeBtn" class="theme-toggle no-print" onclick="cycleTheme()" aria-label="表示モード切替" title="表示モード切替">🌓</button><button class="btn light no-print" onclick="newDay()">新しい日</button></div>
 </header>
 
@@ -352,17 +372,18 @@ select.type-hire{background:#546e7a;color:#fff}
 
 <dialog id="releaseDialog">
 <div class="dialog release-notes">
-  <div class="version">RideLog Pilot v1.0</div>
+  <div class="version">RideLog Pilot v1.1</div>
   <div class="muted">2026.08.11</div>
   <h3>今回の改善</h3>
   <ul>
-    <li>乗車種別を色分け：Uber（黒）／GO（緑）／DiDi（紫）／手上げ（赤）／空港（青）／ホテル（黄）／ハイヤー（グレー）</li>
+    <li>乗車種別カラーを更新：Uber（黒）／GO（青）／DiDi（オレンジ）／手上げ（紫）／空港（水色）／ホテル（黄）／ハイヤー（グレー）</li>
     <li>修正画面は乗車地・降車地を優先表示</li>
     <li>乗車種別・人数・料金・高速料金・メモも修正可能</li>
     <li>時刻変更は必要な時だけ開く方式に変更</li>
     <li>iPhone / iPadでのCSV共有・PDF印刷を改善</li>
     <li>画面表示：自動／常時表示／通常を追加</li>
     <li>iPhoneでの乗車・降車ボタンのサイズを調整</li>
+    <li>ナイトモードでも乗車種別の色が維持されるよう修正</li>
   </ul>
   <div class="toolbar" style="justify-content:flex-end">
     <button class="btn light" onclick="releaseDialog.close()">閉じる</button>
