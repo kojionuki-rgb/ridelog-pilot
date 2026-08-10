@@ -1,13 +1,20 @@
-# RideLog Pilot v0.6
+# RideLog Pilot v1.0
+Release: 2026-08-11
 
-Consolidated pilot candidate.
-
-## Included
-- 「仕事種別」を「乗車種別」に修正
-- 🚕 乗車 / 🏁 降車ボタンを指定デザインに統一
-- ボタンは常に最前面
-- Day / Night / Auto
-- 二段階削除確認
-- A4日報印刷
-- CSV保存
-- `.nojekyll` を追加
+## Improvements
+- 乗車種別カラー
+  - Uber: 黒
+  - GO: 緑
+  - DiDi: 紫
+  - 手上げ: 赤
+  - 空港: 青
+  - ホテル: 黄
+  - ハイヤー: グレー
+- 修正画面は乗車地・降車地を優先
+- 乗車種別・人数・料金・高速料金・メモを修正可能
+- 時刻変更は折りたたみ
+- iPhone/iPad向けCSV共有を改善
+- PDF/印刷処理を改善
+- 画面表示：自動／常時表示／通常
+- iPhoneの乗車・降車ボタンを微調整
+- アプリ内リリースノート

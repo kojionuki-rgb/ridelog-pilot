@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>RideLog Pilot v0.6</title>
+<title>RideLog Pilot v1.0</title>
 <style>
 :root{
   --bg:#f4f6f8;--card:#ffffff;--ink:#17202a;--muted:#6b7280;
@@ -44,6 +44,18 @@ html[data-theme="dark"] .status{background:#242a30;color:#c8d0d8}
 html[data-theme="dark"] .status.active{background:#12382f;color:#b8f2df}
 html[data-theme="dark"] .breakdown div,
 html[data-theme="dark"] .badge{background:#20252a}
+
+html[data-theme="dark"] .btn.light,
+html[data-theme="dark"] .theme-toggle{
+  background:#f5f7fa;
+  color:#111315;
+  border-color:#f5f7fa;
+}
+html[data-theme="dark"] .btn.light:disabled{
+  background:#3a4047;
+  color:#9aa3ad;
+  border-color:#3a4047;
+}
 .theme-toggle{
   border:1px solid var(--line);
   background:var(--card);
@@ -143,6 +155,40 @@ dialog::backdrop{background:rgba(0,0,0,.42)}
   .full{grid-column:auto}.actions{grid-template-columns:1fr}.trip{grid-template-columns:64px 1fr}.fare{grid-column:2;text-align:left}
 }
 
+
+/* v1.0: 乗車種別カラー */
+.badge.type-uber{background:#111;color:#fff}
+.badge.type-go{background:#00a76f;color:#fff}
+.badge.type-didi{background:#7b2cbf;color:#fff}
+.badge.type-hand{background:#c62828;color:#fff}
+.badge.type-airport{background:#1565c0;color:#fff}
+.badge.type-hotel{background:#f4c542;color:#111}
+.badge.type-hire{background:#546e7a;color:#fff}
+.badge.type-other{background:#6b7280;color:#fff}
+select.type-uber{background:#111;color:#fff}
+select.type-go{background:#00a76f;color:#fff}
+select.type-didi{background:#7b2cbf;color:#fff}
+select.type-hand{background:#c62828;color:#fff}
+select.type-airport{background:#1565c0;color:#fff}
+select.type-hotel{background:#f4c542;color:#111}
+select.type-hire{background:#546e7a;color:#fff}
+.settings-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.settings-row select{max-width:230px}
+.wake-status{font-size:12px;color:var(--muted);margin-top:6px}
+.edit-time-details{margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+.edit-time-details summary{cursor:pointer;color:var(--muted);font-weight:700}
+
+.release-link{background:transparent;border:0;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer;padding:2px 0}
+.release-notes{max-width:620px}
+.release-notes h3{margin:14px 0 6px}
+.release-notes ul{margin:6px 0 12px;padding-left:22px;line-height:1.7}
+.release-notes .version{font-weight:800;font-size:18px}
+@media(max-width:500px){
+  .actions{right:8px;width:112px}
+  .actions .btn{min-height:88px;font-size:23px;padding:10px 8px}
+}
+
+
 .print-sheet{display:none}
 @page{size:A4 portrait;margin:8mm}
 @media print{
@@ -167,7 +213,7 @@ dialog::backdrop{background:rgba(0,0,0,.42)}
 <body>
 <div class="app">
 <header>
-  <div><h1>乗務日報 <small>PILOT v0.6</small></h1><div class="muted">ハイヤー・Uber向け</div></div>
+  <div><h1>乗務日報 <small>PILOT v1.0</small></h1><div class="muted">プロドライバー向け</div><button class="release-link no-print" onclick="releaseDialog.showModal()">リリースノート</button></div>
   <div style="display:flex;gap:8px;align-items:center"><button id="themeBtn" class="theme-toggle no-print" onclick="cycleTheme()" aria-label="表示モード切替" title="表示モード切替">🌓</button><button class="btn light no-print" onclick="newDay()">新しい日</button></div>
 </header>
 
@@ -185,7 +231,7 @@ dialog::backdrop{background:rgba(0,0,0,.42)}
   </div>
   <div class="breakdown">
     <div><span>Uber</span><b id="uberFare">¥0</b></div>
-    <div><span>ハイヤー</span><b id="hireFare">¥0</b></div>
+    <div><span>GO</span><b id="goFare">¥0</b></div>
     <div><span>その他</span><b id="otherFare">¥0</b></div>
   </div>
 </section>
@@ -220,9 +266,20 @@ dialog::backdrop{background:rgba(0,0,0,.42)}
     <h2>データ操作</h2>
     <div class="toolbar">
       <button class="btn light" onclick="downloadCSV()">CSV保存</button>
-      <button class="btn light" onclick="renderPrintSheet();window.print()">印刷／PDF</button>
+      <button class="btn light" onclick="printReport()">印刷／PDF</button>
       <button class="btn danger" onclick="clearTrips()">乗車記録を消去</button>
     </div>
+    <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+    <h2 style="margin-top:0">表示設定</h2>
+    <div class="settings-row">
+      <label for="wakeMode"><strong>画面表示</strong></label>
+      <select id="wakeMode" onchange="setWakeMode(this.value)">
+        <option value="auto">自動（乗車中のみ常時表示）</option>
+        <option value="on">常時表示</option>
+        <option value="normal">通常</option>
+      </select>
+    </div>
+    <div id="wakeStatus" class="wake-status">画面表示：通常</div>
   </div>
 </div>
 
@@ -231,7 +288,7 @@ dialog::backdrop{background:rgba(0,0,0,.42)}
     <h2>乗車入力</h2>
     <div id="status" class="status">待機中</div>
     <div class="form">
-      <div class="field"><label>乗車種別</label><select id="type"><option>Uber</option><option>ハイヤー</option><option>DiDi</option><option>その他</option></select></div>
+      <div class="field"><label>乗車種別</label><select id="type" onchange="applyTypeSelectColor(this);save()"><option>Uber</option><option>GO</option><option>DiDi</option><option>手上げ</option><option>空港</option><option>ホテル</option><option>ハイヤー</option><option>その他</option></select></div>
       <div class="field"><label>人数</label><select id="pax"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
       <div class="field full"><label>乗車地</label><input id="pickup" placeholder="例：高円寺"></div>
       <div class="field full"><label>降車地</label><input id="dropoff" placeholder="例：丸の内"></div>
@@ -255,7 +312,7 @@ dialog::backdrop{background:rgba(0,0,0,.42)}
 
 
 <section id="printSheet" class="print-sheet">
-  <h1>アプリ乗務日報</h1>
+  <h1>RideLog 乗務日報</h1>
   <table class="print-meta">
     <tr>
       <th>日付</th><td id="pDate"></td>
@@ -266,7 +323,7 @@ dialog::backdrop{background:rgba(0,0,0,.42)}
     </tr>
     <tr>
       <th>天候</th><td id="pWeather"></td>
-      <th colspan="2">売上合計</th><td id="pTotal" colspan="2"></td>
+      <th colspan="2">営業収入</th><td id="pTotal" colspan="2"></td>
       <th colspan="2">高速料金合計</th><td id="pToll" colspan="2"></td>
     </tr>
   </table>
@@ -289,20 +346,53 @@ dialog::backdrop{background:rgba(0,0,0,.42)}
   <button class="nav active" onclick="window.scrollTo({top:0,behavior:'smooth'})">ホーム</button>
   <button class="nav" onclick="document.getElementById('entry').scrollIntoView({behavior:'smooth'})">入力</button>
   <button class="nav" onclick="document.getElementById('tripList').scrollIntoView({behavior:'smooth'})">履歴</button>
-  <button class="nav" onclick="renderPrintSheet();window.print()">PDF</button>
+  <button class="nav" onclick="printReport()">PDF</button>
 </nav>
+
+
+<dialog id="releaseDialog">
+<div class="dialog release-notes">
+  <div class="version">RideLog Pilot v1.0</div>
+  <div class="muted">2026.08.11</div>
+  <h3>今回の改善</h3>
+  <ul>
+    <li>乗車種別を色分け：Uber（黒）／GO（緑）／DiDi（紫）／手上げ（赤）／空港（青）／ホテル（黄）／ハイヤー（グレー）</li>
+    <li>修正画面は乗車地・降車地を優先表示</li>
+    <li>乗車種別・人数・料金・高速料金・メモも修正可能</li>
+    <li>時刻変更は必要な時だけ開く方式に変更</li>
+    <li>iPhone / iPadでのCSV共有・PDF印刷を改善</li>
+    <li>画面表示：自動／常時表示／通常を追加</li>
+    <li>iPhoneでの乗車・降車ボタンのサイズを調整</li>
+  </ul>
+  <div class="toolbar" style="justify-content:flex-end">
+    <button class="btn light" onclick="releaseDialog.close()">閉じる</button>
+  </div>
+</div>
+</dialog>
 
 <dialog id="editDialog">
 <div class="dialog">
   <h2>乗車記録を編集</h2>
   <div class="form">
-    <div class="field"><label>乗車時刻</label><input id="eStart" type="time"></div>
-    <div class="field"><label>降車時刻</label><input id="eEnd" type="time"></div>
-    <div class="field full"><label>乗車地</label><input id="ePickup"></div>
-    <div class="field full"><label>降車地</label><input id="eDropoff"></div>
+    <div class="field full"><label>乗車地</label><input id="ePickup" autocomplete="off"></div>
+    <div class="field full"><label>降車地</label><input id="eDropoff" autocomplete="off"></div>
+    <div class="field"><label>乗車種別</label>
+      <select id="eType" onchange="applyTypeSelectColor(this)">
+        <option>Uber</option><option>GO</option><option>DiDi</option><option>手上げ</option><option>空港</option><option>ホテル</option><option>ハイヤー</option><option>その他</option>
+      </select>
+    </div>
+    <div class="field"><label>人数</label><input id="ePax" type="number" min="1" max="20"></div>
     <div class="field"><label>料金</label><input id="eFare" type="number"></div>
     <div class="field"><label>高速料金</label><input id="eToll" type="number"></div>
+    <div class="field full"><label>メモ</label><textarea id="eNote" rows="3"></textarea></div>
   </div>
+  <details class="edit-time-details">
+    <summary>時刻も修正する</summary>
+    <div class="form" style="margin-top:10px">
+      <div class="field"><label>乗車時刻</label><input id="eStart" type="time"></div>
+      <div class="field"><label>降車時刻</label><input id="eEnd" type="time"></div>
+    </div>
+  </details>
   <div class="toolbar" style="justify-content:flex-end">
     <button class="btn light" onclick="editDialog.close()">取消</button>
     <button class="btn success" onclick="saveEdit()">保存</button>
@@ -319,6 +409,19 @@ const pad=n=>String(n).padStart(2,'0');
 const now=()=>{const d=new Date();return `${pad(d.getHours())}:${pad(d.getMinutes())}`};
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
 const yen=n=>'¥'+Number(n||0).toLocaleString('ja-JP');
+
+function typeClass(type){
+  return ({
+    'Uber':'type-uber','GO':'type-go','DiDi':'type-didi','手上げ':'type-hand',
+    '空港':'type-airport','ホテル':'type-hotel','ハイヤー':'type-hire','その他':'type-other'
+  })[type]||'type-other';
+}
+function applyTypeSelectColor(el){
+  if(!el) return;
+  [...el.classList].filter(c=>c.startsWith('type-')).forEach(c=>el.classList.remove(c));
+  el.classList.add(typeClass(el.value));
+}
+
 
 function save(){
   readMeta();
@@ -340,7 +443,7 @@ function nowTo(id){$(id).value=now();save()}
 function startTrip(){
   if(state.active){alert('すでに乗車中です。');return}
   state.active={start:now(),type:$('type').value,pax:+$('pax').value,pickup:$('pickup').value.trim()};
-  save();
+  save();syncWakeLock();
 }
 function finishTrip(){
   if(!state.active){alert('先に「乗車開始」を押してください。');return}
@@ -348,7 +451,7 @@ function finishTrip(){
     fare:+($('fare').value||0),toll:+($('toll').value||0),note:$('note').value.trim()};
   state.trips.push(trip); state.active=null;
   ['pickup','dropoff','fare','toll','note'].forEach(id=>$(id).value='');
-  save();
+  save();syncWakeLock();
 }
 function render(){
   const fare=state.trips.reduce((a,t)=>a+t.fare,0);
@@ -356,15 +459,15 @@ function render(){
   const pax=state.trips.reduce((a,t)=>a+t.pax,0);
   const count=state.trips.length;
   const uber=state.trips.filter(t=>t.type==='Uber').reduce((a,t)=>a+t.fare,0);
-  const hire=state.trips.filter(t=>t.type==='ハイヤー').reduce((a,t)=>a+t.fare,0);
-  const other=fare-uber-hire;
+  const go=state.trips.filter(t=>t.type==='GO').reduce((a,t)=>a+t.fare,0);
+  const other=fare-uber-go;
   const goal=Number(state.meta.goal||0);
   const rate=goal>0?Math.min(100,Math.round(fare/goal*100)):0;
   $('sFare').textContent=yen(fare); $('sToll').textContent=yen(toll);
   $('sCount').textContent=count; $('sPax').textContent=pax;
   $('avgFare').textContent=yen(count?Math.round(fare/count):0);
   $('uberFare').textContent=yen(uber);
-  $('hireFare').textContent=yen(hire);
+  $('goFare').textContent=yen(go);
   $('otherFare').textContent=yen(other);
   $('progressBar').style.width=rate+'%';
   $('progressText').textContent=goal>0?`目標 ${yen(goal)}／達成率 ${rate}%`:'目標未設定';
@@ -373,11 +476,13 @@ function render(){
   $('status').textContent=state.active?`乗車中　${state.active.start}／${state.active.pickup||'乗車地未入力'}`:'待機中';
   $('startBtn').disabled=!!state.active;
   $('finishBtn').disabled=!state.active;
+  $('startBtn').style.opacity=state.active?'.45':'1';
+  $('finishBtn').style.opacity=state.active?'1':'.55';
   const list=$('tripList');
   if(!state.trips.length){list.innerHTML='<div class="empty">まだ乗車記録がありません。</div>';return}
   list.innerHTML=state.trips.map((t,i)=>`
     <div class="trip">
-      <div class="badge">${t.type}</div>
+      <div class="badge ${typeClass(t.type)}">${t.type}</div>
       <div>
         <div class="route">${t.pickup||'未入力'} → ${t.dropoff||'未入力'}</div>
         <div class="meta">${t.start}–${t.end}／${t.pax}名／高速 ${yen(t.toll)}</div>
@@ -393,14 +498,20 @@ function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','
 function deleteTrip(i){if(confirm('この記録を削除しますか？')){state.trips.splice(i,1);save()}}
 function editTrip(i){
   editIndex=i;const t=state.trips[i];
-  $('eStart').value=t.start;$('eEnd').value=t.end;$('ePickup').value=t.pickup;
-  $('eDropoff').value=t.dropoff;$('eFare').value=t.fare;$('eToll').value=t.toll;
+  $('ePickup').value=t.pickup||'';$('eDropoff').value=t.dropoff||'';
+  $('eType').value=t.type||'Uber';applyTypeSelectColor($('eType'));
+  $('ePax').value=t.pax||1;$('eFare').value=t.fare||0;$('eToll').value=t.toll||0;
+  $('eNote').value=t.note||'';$('eStart').value=t.start||'';$('eEnd').value=t.end||'';
   editDialog.showModal();
+  setTimeout(()=>$('ePickup').focus(),0);
 }
 function saveEdit(){
   const t=state.trips[editIndex];
-  Object.assign(t,{start:$('eStart').value,end:$('eEnd').value,pickup:$('ePickup').value,
-    dropoff:$('eDropoff').value,fare:+$('eFare').value,toll:+$('eToll').value});
+  Object.assign(t,{
+    pickup:$('ePickup').value,dropoff:$('eDropoff').value,type:$('eType').value,
+    pax:+($('ePax').value||1),fare:+($('eFare').value||0),toll:+($('eToll').value||0),
+    note:$('eNote').value,start:$('eStart').value,end:$('eEnd').value
+  });
   editDialog.close();save();
 }
 function clearTrips(){
@@ -414,13 +525,27 @@ function newDay(){
   state={meta:{date:today(),driver:state.meta.driver||'',car:state.meta.car||'',weather:'晴れ',goal:state.meta.goal||''},trips:[],active:null};
   writeMeta();save();
 }
-function downloadCSV(){
+async function downloadCSV(){
+  readMeta();
   const rows=[['回数','種別','乗車時刻','乗車地','降車時刻','降車地','人数','料金','高速料金','メモ']];
   state.trips.forEach((t,i)=>rows.push([i+1,t.type,t.start,t.pickup,t.end,t.dropoff,t.pax,t.fare,t.toll,t.note]));
   const csv='\uFEFF'+rows.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(',')).join('\n');
+  const filename=`RideLog_乗務日報_${state.meta.date||today()}.csv`;
+  const file=new File([csv],filename,{type:'text/csv;charset=utf-8'});
+  try{
+    if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
+      await navigator.share({files:[file],title:'RideLog CSV'});
+      return;
+    }
+  }catch(e){
+    if(e && e.name==='AbortError') return;
+  }
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download=`乗務日報_${state.meta.date||today()}.csv`;a.click();URL.revokeObjectURL(a.href);
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;a.style.display='none';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},1500);
 }
 
 function renderPrintSheet(){
@@ -442,9 +567,70 @@ function renderPrintSheet(){
     <td>${t.end||''}</td><td>${escapeHtml(t.dropoff||'')}</td><td>${t.pax||''}</td><td>${yen(t.toll||0)}</td><td>${yen(t.fare||0)}</td></tr>`:
     `<tr><td>${i+1}</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`).join('');
 }
+
+function printReport(){
+  renderPrintSheet();
+  setTimeout(()=>{
+    try{ window.print(); }
+    catch(e){ alert('印刷画面を開けませんでした。SafariまたはChromeで開いて再度お試しください。'); }
+  },50);
+}
+
 window.addEventListener('beforeprint',renderPrintSheet);
 
 document.querySelectorAll('input,select,textarea').forEach(el=>el.addEventListener('change',save));
+
+
+const WAKE_KEY='ride_log_wake_mode_v1';
+let wakeLock=null;
+
+async function acquireWakeLock(){
+  if(!('wakeLock' in navigator)){
+    $('wakeStatus').textContent='画面常時表示：このブラウザでは未対応';
+    return false;
+  }
+  try{
+    if(wakeLock) return true;
+    wakeLock=await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release',()=>{
+      wakeLock=null;
+      updateWakeStatus();
+    });
+    updateWakeStatus();
+    return true;
+  }catch(e){
+    wakeLock=null;
+    $('wakeStatus').textContent='画面常時表示：許可されませんでした';
+    return false;
+  }
+}
+async function releaseWakeLock(){
+  if(wakeLock){
+    try{await wakeLock.release()}catch(e){}
+    wakeLock=null;
+  }
+  updateWakeStatus();
+}
+function currentWakeMode(){return localStorage.getItem(WAKE_KEY)||'auto'}
+async function syncWakeLock(){
+  const mode=currentWakeMode();
+  const shouldOn = mode==='on' || (mode==='auto' && !!state.active);
+  if(document.visibilityState!=='visible') return;
+  if(shouldOn) await acquireWakeLock(); else await releaseWakeLock();
+}
+function updateWakeStatus(){
+  const mode=currentWakeMode();
+  const label=mode==='on'?'常時表示':mode==='auto'?'自動（乗車中）':'通常';
+  const active=!!wakeLock;
+  $('wakeStatus').textContent=`画面表示：${label}${active?' ／ スリープ防止中':''}`;
+}
+async function setWakeMode(mode){
+  localStorage.setItem(WAKE_KEY,mode);
+  await syncWakeLock();
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible') syncWakeLock();
+});
 
 const THEME_KEY='ride_log_theme_v1';
 function applyTheme(mode){
@@ -475,6 +661,10 @@ if(window.matchMedia){
 
 applyTheme(localStorage.getItem(THEME_KEY)||'auto');
 load();
+$('wakeMode').value=currentWakeMode();
+applyTypeSelectColor($('type'));
+updateWakeStatus();
+syncWakeLock();
 </script>
 </body>
 </html>
