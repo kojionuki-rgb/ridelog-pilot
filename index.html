@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>RideLog Pilot v1.1</title>
+<title>RideLog Pilot v1.2</title>
 <style>
 :root{
   --bg:#f4f6f8;--card:#ffffff;--ink:#17202a;--muted:#6b7280;
@@ -209,6 +209,101 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
 }
 
 
+
+/* v1.2: 上部固定サマリー */
+.top-dock{
+  position:sticky;
+  top:0;
+  z-index:80;
+  display:grid;
+  grid-template-columns:minmax(95px,1fr) minmax(80px,.7fr) auto auto;
+  gap:8px;
+  align-items:stretch;
+  padding:8px;
+  margin:0 0 12px;
+  background:color-mix(in srgb,var(--bg) 94%,transparent);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--line);
+  border-radius:14px;
+  box-shadow:var(--shadow);
+}
+.top-dock .metric{
+  min-width:0;
+  padding:7px 9px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--card);
+}
+.top-dock .metric span{
+  display:block;
+  font-size:10px;
+  color:var(--muted);
+}
+.top-dock .metric b{
+  display:block;
+  margin-top:2px;
+  font-size:20px;
+  line-height:1.1;
+}
+.top-dock .dock-btn{
+  border:0;
+  border-radius:10px;
+  padding:8px 12px;
+  min-width:82px;
+  font-size:17px;
+  font-weight:800;
+  cursor:pointer;
+}
+.top-dock .dock-start{background:var(--blue);color:#fff}
+.top-dock .dock-finish{background:#d98f93;color:#fff}
+.top-dock .dock-btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* 既存の右側フローティング操作はv1.2では非表示 */
+.actions{display:none!important}
+
+/* 履歴の通し番号・割り込み追加 */
+.trip-wrap{margin:0}
+.trip-line{display:flex;gap:8px;align-items:flex-start}
+.trip-line .trip{flex:1;min-width:0}
+.trip-seq{
+  width:30px;height:30px;flex:0 0 30px;
+  display:grid;place-items:center;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--muted);
+  font-weight:800;
+  font-size:13px;
+  margin-top:8px;
+}
+.insert-wrap{display:flex;justify-content:center;margin:5px 0}
+.insert-btn{
+  border:1px dashed var(--line);
+  background:transparent;
+  color:var(--muted);
+  border-radius:999px;
+  padding:4px 10px;
+  font-size:12px;
+  cursor:pointer;
+}
+.insert-btn:hover{background:var(--card)}
+
+@media(max-width:640px){
+  .top-dock{
+    grid-template-columns:1fr .7fr 68px 68px;
+    gap:6px;
+    padding:6px;
+  }
+  .top-dock .metric{padding:6px 7px}
+  .top-dock .metric b{font-size:17px}
+  .top-dock .dock-btn{
+    min-width:0;
+    padding:7px 5px;
+    font-size:14px;
+  }
+}
+
 .print-sheet{display:none}
 @page{size:A4 portrait;margin:8mm}
 @media print{
@@ -233,9 +328,17 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
 <body>
 <div class="app">
 <header>
-  <div><h1>乗務日報 <small>PILOT v1.1</small></h1><div class="muted">プロドライバー向け</div><button class="release-link no-print" onclick="releaseDialog.showModal()">リリースノート</button></div>
+  <div><h1>乗務日報 <small>PILOT v1.2</small></h1><div class="muted">プロドライバー向け</div><button class="release-link no-print" onclick="releaseDialog.showModal()">リリースノート</button></div>
   <div style="display:flex;gap:8px;align-items:center"><button id="themeBtn" class="theme-toggle no-print" onclick="cycleTheme()" aria-label="表示モード切替" title="表示モード切替">🌓</button><button class="btn light no-print" onclick="newDay()">新しい日</button></div>
 </header>
+
+<div class="top-dock no-print">
+  <div class="metric"><span>累計売上</span><b id="dockFare">¥0</b></div>
+  <div class="metric"><span>乗車回数</span><b id="dockCount">0</b></div>
+  <button id="startBtn" class="dock-btn dock-start" onclick="startTrip()">🚕 乗車</button>
+  <button id="finishBtn" class="dock-btn dock-finish" onclick="finishTrip()">🏁 降車</button>
+</div>
+
 
 <section class="card sales-hero">
   <div>
@@ -317,8 +420,8 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
       <div class="field full"><label>メモ</label><textarea id="note" placeholder="経由地・待機・連絡事項など"></textarea></div>
     </div>
     <div class="actions">
-      <button id="startBtn" class="btn primary" onclick="startTrip()"><span class="action-icon">🚕</span><span>乗車</span></button>
-      <button id="finishBtn" class="btn success" onclick="finishTrip()"><span class="action-icon">🏁</span><span>降車</span></button>
+      <button id="legacyStartBtn" class="btn primary" onclick="startTrip()"><span class="action-icon">🚕</span><span>乗車</span></button>
+      <button id="legacyFinishBtn" class="btn success" onclick="finishTrip()"><span class="action-icon">🏁</span><span>降車</span></button>
     </div>
   </div>
 
@@ -372,7 +475,7 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
 
 <dialog id="releaseDialog">
 <div class="dialog release-notes">
-  <div class="version">RideLog Pilot v1.1</div>
+  <div class="version">RideLog Pilot v1.2</div>
   <div class="muted">2026.08.11</div>
   <h3>今回の改善</h3>
   <ul>
@@ -384,9 +487,43 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
     <li>画面表示：自動／常時表示／通常を追加</li>
     <li>iPhoneでの乗車・降車ボタンのサイズを調整</li>
     <li>ナイトモードでも乗車種別の色が維持されるよう修正</li>
+    <li>乗車後に入力した乗車地が履歴へ反映されない不具合を修正</li>
+    <li>上部に累計売上・乗車回数・乗車・降車を固定表示</li>
+    <li>修正画面の人数をすぐ選べる方式に変更</li>
+    <li>履歴に通し番号を追加</li>
+    <li>履歴の途中へ乗務記録を割り込み追加できる機能を追加</li>
+    <li>降車保存後に乗車種別と人数を毎回リセット</li>
   </ul>
   <div class="toolbar" style="justify-content:flex-end">
     <button class="btn light" onclick="releaseDialog.close()">閉じる</button>
+  </div>
+</div>
+</dialog>
+
+
+<dialog id="insertDialog">
+<div class="dialog">
+  <h2>乗務記録を途中追加</h2>
+  <div id="insertHint" class="muted" style="margin-bottom:10px"></div>
+  <div class="form">
+    <div class="field"><label>乗車種別</label>
+      <select id="iType" onchange="applyTypeSelectColor(this)">
+        <option>Uber</option><option>GO</option><option>DiDi</option><option>手上げ</option>
+        <option>空港</option><option>ホテル</option><option>ハイヤー</option><option>その他</option>
+      </select>
+    </div>
+    <div class="field"><label>人数</label><select id="iPax"><option value="1">1名</option><option value="2">2名</option><option value="3">3名</option><option value="4">4名</option><option value="5">5名</option><option value="6">6名</option><option value="7">7名</option><option value="8">8名</option></select></div>
+    <div class="field"><label>乗車時刻</label><input id="iStart" type="time"></div>
+    <div class="field"><label>降車時刻</label><input id="iEnd" type="time"></div>
+    <div class="field full"><label>乗車地</label><input id="iPickup"></div>
+    <div class="field full"><label>降車地</label><input id="iDropoff"></div>
+    <div class="field"><label>料金</label><input id="iFare" type="number"></div>
+    <div class="field"><label>高速料金</label><input id="iToll" type="number"></div>
+    <div class="field full"><label>メモ</label><textarea id="iNote" rows="3"></textarea></div>
+  </div>
+  <div class="toolbar" style="justify-content:flex-end">
+    <button class="btn light" onclick="insertDialog.close()">取消</button>
+    <button class="btn success" onclick="saveInsertedTrip()">追加</button>
   </div>
 </div>
 </dialog>
@@ -402,7 +539,7 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
         <option>Uber</option><option>GO</option><option>DiDi</option><option>手上げ</option><option>空港</option><option>ホテル</option><option>ハイヤー</option><option>その他</option>
       </select>
     </div>
-    <div class="field"><label>人数</label><input id="ePax" type="number" min="1" max="20"></div>
+    <div class="field"><label>人数</label><select id="ePax"><option value="1">1名</option><option value="2">2名</option><option value="3">3名</option><option value="4">4名</option><option value="5">5名</option><option value="6">6名</option><option value="7">7名</option><option value="8">8名</option></select></div>
     <div class="field"><label>料金</label><input id="eFare" type="number"></div>
     <div class="field"><label>高速料金</label><input id="eToll" type="number"></div>
     <div class="field full"><label>メモ</label><textarea id="eNote" rows="3"></textarea></div>
@@ -468,10 +605,21 @@ function startTrip(){
 }
 function finishTrip(){
   if(!state.active){alert('先に「乗車開始」を押してください。');return}
-  const trip={...state.active,end:now(),dropoff:$('dropoff').value.trim(),
-    fare:+($('fare').value||0),toll:+($('toll').value||0),note:$('note').value.trim()};
-  state.trips.push(trip); state.active=null;
+  const trip={
+    ...state.active,
+    pickup:$('pickup').value.trim(),
+    end:now(),
+    dropoff:$('dropoff').value.trim(),
+    fare:+($('fare').value||0),
+    toll:+($('toll').value||0),
+    note:$('note').value.trim()
+  };
+  state.trips.push(trip);
+  state.active=null;
   ['pickup','dropoff','fare','toll','note'].forEach(id=>$(id).value='');
+  $('type').value='Uber';
+  $('pax').value='1';
+  applyTypeSelectColor($('type'));
   save();syncWakeLock();
 }
 function render(){
@@ -486,6 +634,8 @@ function render(){
   const rate=goal>0?Math.min(100,Math.round(fare/goal*100)):0;
   $('sFare').textContent=yen(fare); $('sToll').textContent=yen(toll);
   $('sCount').textContent=count; $('sPax').textContent=pax;
+  $('dockFare').textContent=yen(fare);
+  $('dockCount').textContent=count;
   $('avgFare').textContent=yen(count?Math.round(fare/count):0);
   $('uberFare').textContent=yen(uber);
   $('goFare').textContent=yen(go);
@@ -500,23 +650,66 @@ function render(){
   $('startBtn').style.opacity=state.active?'.45':'1';
   $('finishBtn').style.opacity=state.active?'1':'.55';
   const list=$('tripList');
-  if(!state.trips.length){list.innerHTML='<div class="empty">まだ乗車記録がありません。</div>';return}
+  if(!state.trips.length){
+    list.innerHTML='<div class="empty">まだ乗車記録がありません。</div>';
+    return;
+  }
   list.innerHTML=state.trips.map((t,i)=>`
-    <div class="trip">
-      <div class="badge ${typeClass(t.type)}">${t.type}</div>
-      <div>
-        <div class="route">${t.pickup||'未入力'} → ${t.dropoff||'未入力'}</div>
-        <div class="meta">${t.start}–${t.end}／${t.pax}名／高速 ${yen(t.toll)}</div>
-        ${t.note?`<div class="meta">${escapeHtml(t.note)}</div>`:''}
+    <div class="trip-wrap">
+      ${i===0?`<div class="insert-wrap"><button class="insert-btn no-print" onclick="openInsertDialog(0)">＋ この前に追加</button></div>`:''}
+      <div class="trip-line">
+        <div class="trip-seq">${i+1}</div>
+        <div class="trip">
+          <div class="badge ${typeClass(t.type)}">${escapeHtml(t.type)}</div>
+          <div>
+            <div class="route">${escapeHtml(t.pickup||'未入力')} → ${escapeHtml(t.dropoff||'未入力')}</div>
+            <div class="meta">${escapeHtml(t.start||'--:--')}–${escapeHtml(t.end||'--:--')}／${Number(t.pax||1)}名／高速 ${yen(t.toll)}</div>
+            ${t.note?`<div class="meta">${escapeHtml(t.note)}</div>`:''}
+          </div>
+          <div class="fare">${yen(t.fare)}<div>
+            <button class="iconbtn no-print" onclick="editTrip(${i})">修正</button>
+            <button class="iconbtn no-print" onclick="deleteTrip(${i})">削除</button>
+          </div></div>
+        </div>
       </div>
-      <div class="fare">${yen(t.fare)}<div>
-        <button class="iconbtn no-print" onclick="editTrip(${i})">修正</button>
-        <button class="iconbtn no-print" onclick="deleteTrip(${i})">削除</button>
-      </div></div>
+      <div class="insert-wrap"><button class="insert-btn no-print" onclick="openInsertDialog(${i+1})">＋ この後に追加</button></div>
     </div>`).join('');
 }
-function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function deleteTrip(i){if(confirm('この記録を削除しますか？')){state.trips.splice(i,1);save()}}
+
+let insertIndex=0;
+function openInsertDialog(index){
+  insertIndex=index;
+  $('insertHint').textContent=`${index+1}番目の乗務記録として追加します。`;
+  $('iType').value='Uber'; applyTypeSelectColor($('iType'));
+  $('iPax').value='1';
+  $('iStart').value='';
+  $('iEnd').value='';
+  $('iPickup').value='';
+  $('iDropoff').value='';
+  $('iFare').value=0;
+  $('iToll').value=0;
+  $('iNote').value='';
+  insertDialog.showModal();
+}
+function saveInsertedTrip(){
+  const trip={
+    type:$('iType').value,
+    pax:+($('iPax').value||1),
+    start:$('iStart').value,
+    end:$('iEnd').value,
+    pickup:$('iPickup').value.trim(),
+    dropoff:$('iDropoff').value.trim(),
+    fare:+($('iFare').value||0),
+    toll:+($('iToll').value||0),
+    note:$('iNote').value.trim()
+  };
+  state.trips.splice(insertIndex,0,trip);
+  insertDialog.close();
+  save();
+}
+
 function editTrip(i){
   editIndex=i;const t=state.trips[i];
   $('ePickup').value=t.pickup||'';$('eDropoff').value=t.dropoff||'';
