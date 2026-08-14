@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>RideLog Pilot v1.2</title>
+<title>RideLog Pilot v1.3</title>
 <style>
 :root{
   --bg:#f4f6f8;--card:#ffffff;--ink:#17202a;--muted:#6b7280;
-  --line:#d9e0e7;--navy:#102030;--green:#167c68;--red:#b42318;
+  --line:#d9e0e7;--navy:#102030;--green:#167c68;--red:#dc2626;
   --shadow:0 8px 24px rgba(16,32,48,.08);--radius:18px;--blue:#0A66D8;--stop:#C62828
 }
 *{box-sizing:border-box}
@@ -163,6 +163,12 @@ dialog::backdrop{background:rgba(0,0,0,.42)}
 .badge.type-hand{background:#7b2cbf;color:#fff}
 .badge.type-airport{background:#38bdf8;color:#071923}
 .badge.type-hotel{background:#f4c542;color:#111}
+
+.badge.type-station{background:#16a34a;color:#fff}
+select.type-station{background:#16a34a;color:#fff}
+html[data-theme="dark"] select.type-station{background:#16a34a;color:#fff;border-color:#4ade80}
+html[data-theme="dark"] .badge.type-station{background:#16a34a;color:#fff}
+
 .badge.type-hire{background:#546e7a;color:#fff}
 .badge.type-other{background:#6b7280;color:#fff}
 select.type-uber{background:#111;color:#fff}
@@ -256,7 +262,7 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
   cursor:pointer;
 }
 .top-dock .dock-start{background:var(--blue);color:#fff}
-.top-dock .dock-finish{background:#d98f93;color:#fff}
+.top-dock .dock-finish{background:#dc2626;color:#fff}
 .top-dock .dock-btn:disabled{opacity:.45;cursor:not-allowed}
 
 /* 既存の右側フローティング操作はv1.2では非表示 */
@@ -328,7 +334,7 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
 <body>
 <div class="app">
 <header>
-  <div><h1>乗務日報 <small>PILOT v1.2</small></h1><div class="muted">プロドライバー向け</div><button class="release-link no-print" onclick="releaseDialog.showModal()">リリースノート</button></div>
+  <div><h1>乗務日報 <small>PILOT v1.3</small></h1><div class="muted">プロドライバー向け</div><button class="release-link no-print" onclick="releaseDialog.showModal()">リリースノート</button></div>
   <div style="display:flex;gap:8px;align-items:center"><button id="themeBtn" class="theme-toggle no-print" onclick="cycleTheme()" aria-label="表示モード切替" title="表示モード切替">🌓</button><button class="btn light no-print" onclick="newDay()">新しい日</button></div>
 </header>
 
@@ -411,7 +417,7 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
     <h2>乗車入力</h2>
     <div id="status" class="status">待機中</div>
     <div class="form">
-      <div class="field"><label>乗車種別</label><select id="type" onchange="applyTypeSelectColor(this);save()"><option>Uber</option><option>GO</option><option>DiDi</option><option>手上げ</option><option>空港</option><option>ホテル</option><option>ハイヤー</option><option>その他</option></select></div>
+      <div class="field"><label>乗車種別</label><select id="type" onchange="applyTypeSelectColor(this);save()"><option>Uber</option><option>GO</option><option>DiDi</option><option>手上げ</option><option>空港</option><option>駅</option><option>ホテル</option><option>ハイヤー</option><option>その他</option></select></div>
       <div class="field"><label>人数</label><select id="pax"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
       <div class="field full"><label>乗車地</label><input id="pickup" placeholder="例：高円寺"></div>
       <div class="field full"><label>降車地</label><input id="dropoff" placeholder="例：丸の内"></div>
@@ -475,16 +481,29 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
 
 <dialog id="releaseDialog">
 <div class="dialog release-notes">
-  <div class="version">RideLog Pilot v1.2</div>
-  <div class="muted">2026.08.13</div>
+  <div class="version">RideLog Pilot v1.3</div>
+  <div class="muted">2026.08.14</div>
   <h3>今回の改善</h3>
   <ul>
+    <li>乗車種別カラーを更新：Uber（黒）／GO（青）／DiDi（オレンジ）／手上げ（紫）／空港（水色）／ホテル（黄）／ハイヤー（グレー）</li>
+    <li>修正画面は乗車地・降車地を優先表示</li>
+    <li>乗車種別・人数・料金・高速料金・メモも修正可能</li>
+    <li>時刻変更は必要な時だけ開く方式に変更</li>
+    <li>iPhone / iPadでのCSV共有・PDF印刷を改善</li>
+    <li>画面表示：自動／常時表示／通常を追加</li>
+    <li>iPhoneでの乗車・降車ボタンのサイズを調整</li>
+    <li>ナイトモードでも乗車種別の色が維持されるよう修正</li>
     <li>乗車後に入力した乗車地が履歴へ反映されない不具合を修正</li>
     <li>上部に累計売上・乗車回数・乗車・降車を固定表示</li>
-    <li>修正画面の人数をタップ後すぐ選べる方式に変更</li>
-    <li>履歴の乗務記録に通し番号を追加</li>
+    <li>修正画面の人数をすぐ選べる方式に変更</li>
+    <li>履歴に通し番号を追加</li>
     <li>履歴の途中へ乗務記録を割り込み追加できる機能を追加</li>
-    <li>降車保存後、乗車種別を「Uber」、人数を「1名」へ自動リセット</li>
+    <li>降車保存後に乗車種別と人数を毎回リセット</li>
+    <li>乗車種別・人数が履歴へ反映されないケースを修正</li>
+    <li>乗車種別に「駅」（緑）を追加</li>
+    <li>「乗車」を押すと乗車地入力欄へ自動移動・フォーカス</li>
+    <li>乗車中の「降車」ボタンを明確な赤へ変更</li>
+    <li>iPhone / iPadでPDF・印刷が反応しない問題に対する処理を改善</li>
   </ul>
   <div class="toolbar" style="justify-content:flex-end">
     <button class="btn light" onclick="releaseDialog.close()">閉じる</button>
@@ -501,7 +520,7 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
     <div class="field"><label>乗車種別</label>
       <select id="iType" onchange="applyTypeSelectColor(this)">
         <option>Uber</option><option>GO</option><option>DiDi</option><option>手上げ</option>
-        <option>空港</option><option>ホテル</option><option>ハイヤー</option><option>その他</option>
+        <option>空港</option><option>駅</option><option>ホテル</option><option>ハイヤー</option><option>その他</option>
       </select>
     </div>
     <div class="field"><label>人数</label><select id="iPax"><option value="1">1名</option><option value="2">2名</option><option value="3">3名</option><option value="4">4名</option><option value="5">5名</option><option value="6">6名</option><option value="7">7名</option><option value="8">8名</option></select></div>
@@ -528,7 +547,7 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
     <div class="field full"><label>降車地</label><input id="eDropoff" autocomplete="off"></div>
     <div class="field"><label>乗車種別</label>
       <select id="eType" onchange="applyTypeSelectColor(this)">
-        <option>Uber</option><option>GO</option><option>DiDi</option><option>手上げ</option><option>空港</option><option>ホテル</option><option>ハイヤー</option><option>その他</option>
+        <option>Uber</option><option>GO</option><option>DiDi</option><option>手上げ</option><option>空港</option><option>駅</option><option>ホテル</option><option>ハイヤー</option><option>その他</option>
       </select>
     </div>
     <div class="field"><label>人数</label><select id="ePax"><option value="1">1名</option><option value="2">2名</option><option value="3">3名</option><option value="4">4名</option><option value="5">5名</option><option value="6">6名</option><option value="7">7名</option><option value="8">8名</option></select></div>
@@ -563,7 +582,7 @@ const yen=n=>'¥'+Number(n||0).toLocaleString('ja-JP');
 function typeClass(type){
   return ({
     'Uber':'type-uber','GO':'type-go','DiDi':'type-didi','手上げ':'type-hand',
-    '空港':'type-airport','ホテル':'type-hotel','ハイヤー':'type-hire','その他':'type-other'
+    '空港':'type-airport','駅':'type-station','ホテル':'type-hotel','ハイヤー':'type-hire','その他':'type-other'
   })[type]||'type-other';
 }
 function applyTypeSelectColor(el){
@@ -592,13 +611,26 @@ function writeMeta(){
 function nowTo(id){$(id).value=now();save()}
 function startTrip(){
   if(state.active){alert('すでに乗車中です。');return}
-  state.active={start:now(),type:$('type').value,pax:+$('pax').value,pickup:$('pickup').value.trim()};
-  save();syncWakeLock();
+  state.active={
+    start:now(),
+    type:$('type').value,
+    pax:+$('pax').value,
+    pickup:$('pickup').value.trim()
+  };
+  save();
+  syncWakeLock();
+  requestAnimationFrame(()=>{
+    const pickup=$('pickup');
+    pickup.scrollIntoView({behavior:'smooth',block:'center'});
+    setTimeout(()=>pickup.focus({preventScroll:true}),220);
+  });
 }
 function finishTrip(){
   if(!state.active){alert('先に「乗車開始」を押してください。');return}
   const trip={
     ...state.active,
+    type:$('type').value,
+    pax:+($('pax').value||1),
     pickup:$('pickup').value.trim(),
     end:now(),
     dropoff:$('dropoff').value.trim(),
@@ -776,10 +808,11 @@ function renderPrintSheet(){
 
 function printReport(){
   renderPrintSheet();
-  setTimeout(()=>{
-    try{ window.print(); }
-    catch(e){ alert('印刷画面を開けませんでした。SafariまたはChromeで開いて再度お試しください。'); }
-  },50);
+  try{
+    window.print();
+  }catch(e){
+    alert('印刷画面を開けませんでした。Safariで開き直して再度お試しください。');
+  }
 }
 
 window.addEventListener('beforeprint',renderPrintSheet);
