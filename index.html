@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>RideLog Pilot v1.3</title>
+<title>RideLog Pilot v1.4</title>
 <style>
 :root{
   --bg:#f4f6f8;--card:#ffffff;--ink:#17202a;--muted:#6b7280;
@@ -252,6 +252,8 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
   font-size:20px;
   line-height:1.1;
 }
+.top-dock .metric-fare b{font-size:28px}
+.top-dock .metric-count b{font-size:24px}
 .top-dock .dock-btn{
   border:0;
   border-radius:10px;
@@ -303,6 +305,8 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
   }
   .top-dock .metric{padding:6px 7px}
   .top-dock .metric b{font-size:17px}
+  .top-dock .metric-fare b{font-size:25px}
+  .top-dock .metric-count b{font-size:21px}
   .top-dock .dock-btn{
     min-width:0;
     padding:7px 5px;
@@ -334,13 +338,13 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
 <body>
 <div class="app">
 <header>
-  <div><h1>乗務日報 <small>PILOT v1.3</small></h1><div class="muted">プロドライバー向け</div><button class="release-link no-print" onclick="releaseDialog.showModal()">リリースノート</button></div>
+  <div><h1>乗務日報 <small>PILOT v1.4</small></h1><div class="muted">プロドライバー向け</div><button class="release-link no-print" onclick="releaseDialog.showModal()">リリースノート</button></div>
   <div style="display:flex;gap:8px;align-items:center"><button id="themeBtn" class="theme-toggle no-print" onclick="cycleTheme()" aria-label="表示モード切替" title="表示モード切替">🌓</button><button class="btn light no-print" onclick="newDay()">新しい日</button></div>
 </header>
 
 <div class="top-dock no-print">
-  <div class="metric"><span>累計売上</span><b id="dockFare">¥0</b></div>
-  <div class="metric"><span>乗車回数</span><b id="dockCount">0</b></div>
+  <div class="metric metric-fare"><span>累計売上</span><b id="dockFare">¥0</b></div>
+  <div class="metric metric-count"><span>乗車回数</span><b id="dockCount">0</b></div>
   <button id="startBtn" class="dock-btn dock-start" onclick="startTrip()">🚕 乗車</button>
   <button id="finishBtn" class="dock-btn dock-finish" onclick="finishTrip()">🏁 降車</button>
 </div>
@@ -417,7 +421,7 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
     <h2>乗車入力</h2>
     <div id="status" class="status">待機中</div>
     <div class="form">
-      <div class="field"><label>乗車種別</label><select id="type" onchange="applyTypeSelectColor(this);save()"><option>Uber</option><option>GO</option><option>DiDi</option><option>手上げ</option><option>空港</option><option>駅</option><option>ホテル</option><option>ハイヤー</option><option>その他</option></select></div>
+      <div class="field"><label>乗車種別</label><select id="type" onchange="applyTypeSelectColor(this);save()"><option value="Uber">⬛ Uber</option><option value="手上げ">🟪 手上げ</option><option value="駅">🟩 駅</option><option value="ホテル">🟨 ホテル</option><option value="空港">🟦 空港</option><option value="GO">🟦 GO</option><option value="DiDi">🟧 DiDi</option><option value="ハイヤー">⬜ ハイヤー</option><option value="その他">◼︎ その他</option></select></div>
       <div class="field"><label>人数</label><select id="pax"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
       <div class="field full"><label>乗車地</label><input id="pickup" placeholder="例：高円寺"></div>
       <div class="field full"><label>降車地</label><input id="dropoff" placeholder="例：丸の内"></div>
@@ -481,29 +485,14 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
 
 <dialog id="releaseDialog">
 <div class="dialog release-notes">
-  <div class="version">RideLog Pilot v1.3</div>
-  <div class="muted">2026.08.14</div>
+  <div class="version">RideLog Pilot v1.4</div>
+  <div class="muted">2026.08.18</div>
   <h3>今回の改善</h3>
   <ul>
-    <li>乗車種別カラーを更新：Uber（黒）／GO（青）／DiDi（オレンジ）／手上げ（紫）／空港（水色）／ホテル（黄）／ハイヤー（グレー）</li>
-    <li>修正画面は乗車地・降車地を優先表示</li>
-    <li>乗車種別・人数・料金・高速料金・メモも修正可能</li>
-    <li>時刻変更は必要な時だけ開く方式に変更</li>
-    <li>iPhone / iPadでのCSV共有・PDF印刷を改善</li>
-    <li>画面表示：自動／常時表示／通常を追加</li>
-    <li>iPhoneでの乗車・降車ボタンのサイズを調整</li>
-    <li>ナイトモードでも乗車種別の色が維持されるよう修正</li>
-    <li>乗車後に入力した乗車地が履歴へ反映されない不具合を修正</li>
-    <li>上部に累計売上・乗車回数・乗車・降車を固定表示</li>
-    <li>修正画面の人数をすぐ選べる方式に変更</li>
-    <li>履歴に通し番号を追加</li>
-    <li>履歴の途中へ乗務記録を割り込み追加できる機能を追加</li>
-    <li>降車保存後に乗車種別と人数を毎回リセット</li>
-    <li>乗車種別・人数が履歴へ反映されないケースを修正</li>
-    <li>乗車種別に「駅」（緑）を追加</li>
-    <li>「乗車」を押すと乗車地入力欄へ自動移動・フォーカス</li>
-    <li>乗車中の「降車」ボタンを明確な赤へ変更</li>
-    <li>iPhone / iPadでPDF・印刷が反応しない問題に対する処理を改善</li>
+    <li>乗車種別の並び順を「Uber → 手上げ → 駅 → ホテル → 空港 → GO → DiDi → ハイヤー → その他」に変更</li>
+    <li>乗車種別の選択肢に色付き四角を追加し、色で判別しやすく改善</li>
+    <li>上部固定バーの累計売上を2段階大きく表示</li>
+    <li>上部固定バーの乗車回数を1段階大きく表示</li>
   </ul>
   <div class="toolbar" style="justify-content:flex-end">
     <button class="btn light" onclick="releaseDialog.close()">閉じる</button>
@@ -519,8 +508,7 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
   <div class="form">
     <div class="field"><label>乗車種別</label>
       <select id="iType" onchange="applyTypeSelectColor(this)">
-        <option>Uber</option><option>GO</option><option>DiDi</option><option>手上げ</option>
-        <option>空港</option><option>駅</option><option>ホテル</option><option>ハイヤー</option><option>その他</option>
+        <option value="Uber">⬛ Uber</option><option value="手上げ">🟪 手上げ</option><option value="駅">🟩 駅</option><option value="ホテル">🟨 ホテル</option><option value="空港">🟦 空港</option><option value="GO">🟦 GO</option><option value="DiDi">🟧 DiDi</option><option value="ハイヤー">⬜ ハイヤー</option><option value="その他">◼︎ その他</option>
       </select>
     </div>
     <div class="field"><label>人数</label><select id="iPax"><option value="1">1名</option><option value="2">2名</option><option value="3">3名</option><option value="4">4名</option><option value="5">5名</option><option value="6">6名</option><option value="7">7名</option><option value="8">8名</option></select></div>
@@ -547,7 +535,7 @@ html[data-theme="dark"] .badge.type-other{background:#4b5563;color:#fff}
     <div class="field full"><label>降車地</label><input id="eDropoff" autocomplete="off"></div>
     <div class="field"><label>乗車種別</label>
       <select id="eType" onchange="applyTypeSelectColor(this)">
-        <option>Uber</option><option>GO</option><option>DiDi</option><option>手上げ</option><option>空港</option><option>駅</option><option>ホテル</option><option>ハイヤー</option><option>その他</option>
+        <option value="Uber">⬛ Uber</option><option value="手上げ">🟪 手上げ</option><option value="駅">🟩 駅</option><option value="ホテル">🟨 ホテル</option><option value="空港">🟦 空港</option><option value="GO">🟦 GO</option><option value="DiDi">🟧 DiDi</option><option value="ハイヤー">⬜ ハイヤー</option><option value="その他">◼︎ その他</option>
       </select>
     </div>
     <div class="field"><label>人数</label><select id="ePax"><option value="1">1名</option><option value="2">2名</option><option value="3">3名</option><option value="4">4名</option><option value="5">5名</option><option value="6">6名</option><option value="7">7名</option><option value="8">8名</option></select></div>
